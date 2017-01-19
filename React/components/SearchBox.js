@@ -12,16 +12,19 @@ var formStyle = {
 var SearchBox = React.createClass({
     getInitialState() {
         return {
-            query: null
+            query: null,
+            engine: 'google'
         }
     },
     componentDidMount() {
-      this.SearchBox.focus();
+      this.SearchBox.focus()
     },
-    searchQuery(e) {
-        let component = this;
-        e.preventDefault();
-        component.setState({query: $(this.SearchBox).val()});
+    googleSearch(query) {
+        console.log('google')
+    },
+    wikipediaSearch(query) {
+        let component = this
+
         $.ajax({
             url: `http://en.wikipedia.org/w/api.php?format=json&action=query&generator=search&
             gsrnamespace=0&gsrlimit=10&prop=pageimages|extracts&pilimit=max&exintro&explaintext
@@ -37,9 +40,23 @@ var SearchBox = React.createClass({
                         summary: result.extract
                     }
                 })
-                component.props.callback(data);
+
+                component.props.callback(data)
             }
         });
+    },
+    searchQuery(e) {
+        let component = this
+        e.preventDefault()
+        component.setState({query: $(this.SearchBox).val()})
+        switch (component.state.engine) {
+            case 'google':
+                component.googleSearch(component.state.query)
+                break
+            case 'wikipedia':
+                component.wikipediaSearch(component.state.query)
+                break
+        }
     },
     render() {
         let query = this.state.query;
@@ -47,13 +64,48 @@ var SearchBox = React.createClass({
             <form onSubmit={this.searchQuery} style={ query ? {} : formStyle} className="ui form">
                 <div className="field">
                     <div className="ui icon big input">
-                      <input
+                        <input
                         ref={(input) => { this.SearchBox = input; }}
                         type="text" placeholder="Search for anything..."></input>
-                      <i className="search icon"></i>
+                        <i className="search icon"></i>
+
+                        <SearchEngine
+                            parent={this}></SearchEngine>
                     </div>
                 </div>
             </form>
+        )
+    }
+})
+
+var SearchEngine = React.createClass({
+    getInitialState() {
+        return {
+            engine: this.props.parent.state.engine
+        }
+    },
+    componentDidMount() {
+        $('.selection.dropdown')
+          .dropdown()
+        ;
+    },
+    changeSearchEngine(e) {
+        this.props.parent.setState({
+            engine: $(e.target).text().toLowerCase()
+        })
+    },
+    render() {
+        return (
+            <div className="ui selection dropdown">
+                <input type="hidden" name={this.state.engine}></input>
+                <i className="dropdown icon"></i>
+                <div className="default text">{this.state.engine}</div>
+
+                <div className="menu">
+                    <div className="item" data-value="1" onClick={this.changeSearchEngine}>Google</div>
+                    <div className="item" data-value="0" onClick={this.changeSearchEngine}>Wikipedia</div>
+                </div>
+            </div>
         )
     }
 })

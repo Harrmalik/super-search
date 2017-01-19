@@ -21487,7 +21487,7 @@
 
 	var _SearchBox2 = _interopRequireDefault(_SearchBox);
 
-	var _Results = __webpack_require__(180);
+	var _Results = __webpack_require__(403);
 
 	var _Results2 = _interopRequireDefault(_Results);
 
@@ -21537,7 +21537,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _lodash = __webpack_require__(181);
+	var _lodash = __webpack_require__(180);
 
 	var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -21555,16 +21555,19 @@
 	    displayName: 'SearchBox',
 	    getInitialState: function getInitialState() {
 	        return {
-	            query: null
+	            query: null,
+	            engine: 'google'
 	        };
 	    },
 	    componentDidMount: function componentDidMount() {
 	        this.SearchBox.focus();
 	    },
-	    searchQuery: function searchQuery(e) {
+	    googleSearch: function googleSearch(query) {
+	        console.log('google');
+	    },
+	    wikipediaSearch: function wikipediaSearch(query) {
 	        var component = this;
-	        e.preventDefault();
-	        component.setState({ query: $(this.SearchBox).val() });
+
 	        $.ajax({
 	            url: 'http://en.wikipedia.org/w/api.php?format=json&action=query&generator=search&\n            gsrnamespace=0&gsrlimit=10&prop=pageimages|extracts&pilimit=max&exintro&explaintext\n            &exsentences=1&exlimit=max&gsrsearch=' + $(this.SearchBox).val(),
 	            crossDomain: true,
@@ -21578,9 +21581,23 @@
 	                        summary: result.extract
 	                    };
 	                });
+
 	                component.props.callback(data);
 	            }
 	        });
+	    },
+	    searchQuery: function searchQuery(e) {
+	        var component = this;
+	        e.preventDefault();
+	        component.setState({ query: $(this.SearchBox).val() });
+	        switch (component.state.engine) {
+	            case 'google':
+	                component.googleSearch(component.state.query);
+	                break;
+	            case 'wikipedia':
+	                component.wikipediaSearch(component.state.query);
+	                break;
+	        }
 	    },
 	    render: function render() {
 	        var _this = this;
@@ -21600,7 +21617,53 @@
 	                            _this.SearchBox = input;
 	                        },
 	                        type: 'text', placeholder: 'Search for anything...' }),
-	                    _react2.default.createElement('i', { className: 'search icon' })
+	                    _react2.default.createElement('i', { className: 'search icon' }),
+	                    _react2.default.createElement(SearchEngine, {
+	                        parent: this })
+	                )
+	            )
+	        );
+	    }
+	});
+
+	var SearchEngine = _react2.default.createClass({
+	    displayName: 'SearchEngine',
+	    getInitialState: function getInitialState() {
+	        return {
+	            engine: this.props.parent.state.engine
+	        };
+	    },
+	    componentDidMount: function componentDidMount() {
+	        $('.selection.dropdown').dropdown();
+	    },
+	    changeSearchEngine: function changeSearchEngine(e) {
+	        this.props.parent.setState({
+	            engine: $(e.target).text().toLowerCase()
+	        });
+	    },
+	    render: function render() {
+	        return _react2.default.createElement(
+	            'div',
+	            { className: 'ui selection dropdown' },
+	            _react2.default.createElement('input', { type: 'hidden', name: this.state.engine }),
+	            _react2.default.createElement('i', { className: 'dropdown icon' }),
+	            _react2.default.createElement(
+	                'div',
+	                { className: 'default text' },
+	                this.state.engine
+	            ),
+	            _react2.default.createElement(
+	                'div',
+	                { className: 'menu' },
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'item', 'data-value': '1', onClick: this.changeSearchEngine },
+	                    'Google'
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'item', 'data-value': '0', onClick: this.changeSearchEngine },
+	                    'Wikipedia'
 	                )
 	            )
 	        );
@@ -21611,86 +21674,6 @@
 
 /***/ },
 /* 180 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _lodash = __webpack_require__(181);
-
-	var _lodash2 = _interopRequireDefault(_lodash);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	var Results = _react2.default.createClass({
-	    displayName: 'Results',
-	    render: function render() {
-	        var data = this.props.data[0];
-	        if (!data) {
-	            return _react2.default.createElement('div', null);
-	        } else {
-	            return _react2.default.createElement(
-	                'div',
-	                { className: 'ui items' },
-	                _lodash2.default.map(data, function (result) {
-	                    return _react2.default.createElement(Result, {
-	                        key: result.id,
-	                        result: result });
-	                })
-	            );
-	        }
-	    }
-	});
-
-	var Result = _react2.default.createClass({
-	    displayName: 'Result',
-	    render: function render() {
-	        return _react2.default.createElement(
-	            'div',
-	            { className: 'item' },
-	            _react2.default.createElement(
-	                'div',
-	                { className: 'content' },
-	                _react2.default.createElement(
-	                    'a',
-	                    { className: 'header' },
-	                    this.props.result.header
-	                ),
-	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'meta' },
-	                    _react2.default.createElement(
-	                        'span',
-	                        null,
-	                        _react2.default.createElement(
-	                            'a',
-	                            { href: this.props.result.url, target: '_blank' },
-	                            this.props.result.url
-	                        )
-	                    )
-	                ),
-	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'description' },
-	                    $(this.props.result.summary).text()
-	                ),
-	                _react2.default.createElement('div', { className: 'ui divider' })
-	            )
-	        );
-	    }
-	});
-
-	exports.default = Results;
-
-/***/ },
-/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, module) {/**
@@ -38778,10 +38761,10 @@
 	  }
 	}.call(this));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(182)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(181)(module)))
 
 /***/ },
-/* 182 */
+/* 181 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -38795,6 +38778,307 @@
 		return module;
 	}
 
+
+/***/ },
+/* 182 */,
+/* 183 */,
+/* 184 */,
+/* 185 */,
+/* 186 */,
+/* 187 */,
+/* 188 */,
+/* 189 */,
+/* 190 */,
+/* 191 */,
+/* 192 */,
+/* 193 */,
+/* 194 */,
+/* 195 */,
+/* 196 */,
+/* 197 */,
+/* 198 */,
+/* 199 */,
+/* 200 */,
+/* 201 */,
+/* 202 */,
+/* 203 */,
+/* 204 */,
+/* 205 */,
+/* 206 */,
+/* 207 */,
+/* 208 */,
+/* 209 */,
+/* 210 */,
+/* 211 */,
+/* 212 */,
+/* 213 */,
+/* 214 */,
+/* 215 */,
+/* 216 */,
+/* 217 */,
+/* 218 */,
+/* 219 */,
+/* 220 */,
+/* 221 */,
+/* 222 */,
+/* 223 */,
+/* 224 */,
+/* 225 */,
+/* 226 */,
+/* 227 */,
+/* 228 */,
+/* 229 */,
+/* 230 */,
+/* 231 */,
+/* 232 */,
+/* 233 */,
+/* 234 */,
+/* 235 */,
+/* 236 */,
+/* 237 */,
+/* 238 */,
+/* 239 */,
+/* 240 */,
+/* 241 */,
+/* 242 */,
+/* 243 */,
+/* 244 */,
+/* 245 */,
+/* 246 */,
+/* 247 */,
+/* 248 */,
+/* 249 */,
+/* 250 */,
+/* 251 */,
+/* 252 */,
+/* 253 */,
+/* 254 */,
+/* 255 */,
+/* 256 */,
+/* 257 */,
+/* 258 */,
+/* 259 */,
+/* 260 */,
+/* 261 */,
+/* 262 */,
+/* 263 */,
+/* 264 */,
+/* 265 */,
+/* 266 */,
+/* 267 */,
+/* 268 */,
+/* 269 */,
+/* 270 */,
+/* 271 */,
+/* 272 */,
+/* 273 */,
+/* 274 */,
+/* 275 */,
+/* 276 */,
+/* 277 */,
+/* 278 */,
+/* 279 */,
+/* 280 */,
+/* 281 */,
+/* 282 */,
+/* 283 */,
+/* 284 */,
+/* 285 */,
+/* 286 */,
+/* 287 */,
+/* 288 */,
+/* 289 */,
+/* 290 */,
+/* 291 */,
+/* 292 */,
+/* 293 */,
+/* 294 */,
+/* 295 */,
+/* 296 */,
+/* 297 */,
+/* 298 */,
+/* 299 */,
+/* 300 */,
+/* 301 */,
+/* 302 */,
+/* 303 */,
+/* 304 */,
+/* 305 */,
+/* 306 */,
+/* 307 */,
+/* 308 */,
+/* 309 */,
+/* 310 */,
+/* 311 */,
+/* 312 */,
+/* 313 */,
+/* 314 */,
+/* 315 */,
+/* 316 */,
+/* 317 */,
+/* 318 */,
+/* 319 */,
+/* 320 */,
+/* 321 */,
+/* 322 */,
+/* 323 */,
+/* 324 */,
+/* 325 */,
+/* 326 */,
+/* 327 */,
+/* 328 */,
+/* 329 */,
+/* 330 */,
+/* 331 */,
+/* 332 */,
+/* 333 */,
+/* 334 */,
+/* 335 */,
+/* 336 */,
+/* 337 */,
+/* 338 */,
+/* 339 */,
+/* 340 */,
+/* 341 */,
+/* 342 */,
+/* 343 */,
+/* 344 */,
+/* 345 */,
+/* 346 */,
+/* 347 */,
+/* 348 */,
+/* 349 */,
+/* 350 */,
+/* 351 */,
+/* 352 */,
+/* 353 */,
+/* 354 */,
+/* 355 */,
+/* 356 */,
+/* 357 */,
+/* 358 */,
+/* 359 */,
+/* 360 */,
+/* 361 */,
+/* 362 */,
+/* 363 */,
+/* 364 */,
+/* 365 */,
+/* 366 */,
+/* 367 */,
+/* 368 */,
+/* 369 */,
+/* 370 */,
+/* 371 */,
+/* 372 */,
+/* 373 */,
+/* 374 */,
+/* 375 */,
+/* 376 */,
+/* 377 */,
+/* 378 */,
+/* 379 */,
+/* 380 */,
+/* 381 */,
+/* 382 */,
+/* 383 */,
+/* 384 */,
+/* 385 */,
+/* 386 */,
+/* 387 */,
+/* 388 */,
+/* 389 */,
+/* 390 */,
+/* 391 */,
+/* 392 */,
+/* 393 */,
+/* 394 */,
+/* 395 */,
+/* 396 */,
+/* 397 */,
+/* 398 */,
+/* 399 */,
+/* 400 */,
+/* 401 */,
+/* 402 */,
+/* 403 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _lodash = __webpack_require__(180);
+
+	var _lodash2 = _interopRequireDefault(_lodash);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var Results = _react2.default.createClass({
+	    displayName: 'Results',
+	    render: function render() {
+	        var data = this.props.data[0];
+	        if (!data) {
+	            return _react2.default.createElement('div', null);
+	        } else {
+	            return _react2.default.createElement(
+	                'div',
+	                { className: 'ui items' },
+	                _lodash2.default.map(data, function (result) {
+	                    return _react2.default.createElement(Result, {
+	                        key: result.id,
+	                        result: result });
+	                })
+	            );
+	        }
+	    }
+	});
+
+	var Result = _react2.default.createClass({
+	    displayName: 'Result',
+	    render: function render() {
+	        return _react2.default.createElement(
+	            'div',
+	            { className: 'item' },
+	            _react2.default.createElement(
+	                'div',
+	                { className: 'content' },
+	                _react2.default.createElement(
+	                    'a',
+	                    { className: 'header' },
+	                    this.props.result.header
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'meta' },
+	                    _react2.default.createElement(
+	                        'span',
+	                        null,
+	                        _react2.default.createElement(
+	                            'a',
+	                            { href: this.props.result.url, target: '_blank' },
+	                            this.props.result.url
+	                        )
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'description' },
+	                    $(this.props.result.summary).text()
+	                ),
+	                _react2.default.createElement('div', { className: 'ui divider' })
+	            )
+	        );
+	    }
+	});
+
+	exports.default = Results;
 
 /***/ }
 /******/ ]);
